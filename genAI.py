@@ -3,7 +3,10 @@ import openai
 import sys
 import config
 
-openai.api_key = config.OPENAI_API_KEY
+
+def init_openai(api_key):
+    openai.api_key = api_key
+
 
 STANDARDS = {
     "CCSS.ELA-LITERACY.W.4.9": "CCSS.ELA-LITERACY.W.4.9 - Draw evidence from literary or informational texts to support analysis, reflection, and research."
