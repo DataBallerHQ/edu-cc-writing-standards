@@ -3,58 +3,14 @@ import openai
 import sys
 import config
 
-
-def init_openai(api_key):
-    openai.api_key = api_key
-
+openai.api_key = config.OPENAI_API_KEY
 
 STANDARDS = {
     "CCSS.ELA-LITERACY.W.4.9": "CCSS.ELA-LITERACY.W.4.9 - Draw evidence from literary or informational texts to support analysis, reflection, and research."
 }
-
-def run_interactive():
-    print("\n")
-    theme = input("Please enter the theme:")
-    i = 0
-    print("\n")
-    print("Here are the available standards:")
-    keys = []
-    for s in STANDARDS.keys():
-        i += 1
-        keys.append(s)
-        print(i, ":", s)
-    cc_standard = ""
-    while cc_standard == "":
-        cc_standard_input = input(f"Please select a standard [1-{i}]:")
-        try:
-            choice = int(cc_standard_input)        
-        except:
-            continue
-        if choice > 0 and choice <= i:
-            cc_standard = STANDARDS[keys[choice-1]]            
-
-    print("\nTheme:")
-    print (theme)
-    print("\nStandard:")
-    print (cc_standard)
-    
-    messages = generate_question_messages(cc_standard, theme)
-    print("\nGettig question...")
-    response = get_response(messages)
-
-    message = response["choices"][0]["message"] 
-    messages.append(message)
-    content = json.loads(response["choices"][0]["message"]["content"])
-    print ("\nContext:")
-    print (content["context"])
-    print ("\nQuestion:")
-    print (content["question"])
-    print ("\nEvaluation:")
-    print (content["evaluation"])
-
     
 
-def get_response(messages):
+def get_model_response(messages, temperature=0):
     response = openai.ChatCompletion.create(
         model="gpt-3.5-turbo",
         messages=messages,
@@ -66,7 +22,6 @@ def get_response(messages):
         stop=[" Human:", " AI:"]
     )
     return response
-
 
 def generate_question_messages(cc_standard, theme):
     return [
@@ -116,3 +71,29 @@ Evaluate the student's answer based solely on the rubric and information provide
 Do not consider any additional knowledge or information about the theme of {theme}."""
         }
     ]
+
+def generate_ai_answers_message(a_resp, score):
+    return [
+        {
+            "role": "system",
+            "content": """
+You are a grade school student. 
+The user will provide a JSON object containing the information required to answer a question:
+- A common core education standard with key "standard"
+- A "context" which provides the only information you should reference when answering the question.
+- A "question" to be answered
+- A evaluation rubric with the key evaluation"
+Repeat answers must be unique and not identical to previous answers.
+            """
+        },
+        {"role": "user", "content": json.dumps(a_resp)},
+        {
+            "role": "user",
+            "content": f"""
+Provide an answer to the question that would evaluate to a score of {score} based on the included evaluation rubric. 
+Answer as a grade school student at the age appropriate for the indicated standard.
+            """
+        },
+  ]
+
+
