@@ -6,7 +6,12 @@ import config
 openai.api_key = config.OPENAI_API_KEY
 
 STANDARDS = {
-    "CCSS.ELA-LITERACY.W.4.9": "CCSS.ELA-LITERACY.W.4.9 - Draw evidence from literary or informational texts to support analysis, reflection, and research."
+    "CCSS.ELA-LITERACY.W.4.9": "CCSS.ELA-LITERACY.W.4.9 - Draw evidence from literary or informational texts to support analysis, reflection, and research.",
+    "CCSS.ELA-LITERACY.RL.1.1": "CCSS.ELA-LITERACY.RL.1.1 - Ask and answer questions about key details in a text.",
+    "CCSS.ELA-LITERACY.RL.1.2": "CCSS.ELA-LITERACY.RL.1.2 - Retell stories, including key details, and demonstrate understanding of their central message or lesson.",
+    "CCSS.ELA-LITERACY.RL.1.3": "CCSS.ELA-LITERACY.RL.1.3 - Describe characters, settings, and major events in a story, using key details.",
+    "CCSS.ELA-LITERACY.RL.1.4": "CCSS.ELA-LITERACY.RL.1.4 - Identify words and phrases in stories or poems that suggest feelings or appeal to the senses.",
+    "CCSS.ELA-LITERACY.RL.1.5": "CCSS.ELA-LITERACY.RL.1.5 - Explain major differences between books that tell stories and books that give information, drawing on a wide reading of a range of text types.",
 }
     
 
@@ -22,6 +27,7 @@ def get_model_response(messages, temperature=0):
         stop=[" Human:", " AI:"]
     )
     return response
+
 
 def generate_question_messages(cc_standard, theme):
     return [
@@ -92,6 +98,7 @@ Repeat answers must be unique and not identical to previous answers.
             "content": f"""
 Provide an answer to the question that would evaluate to a score of {score} based on the included evaluation rubric. 
 Answer as a grade school student at the age appropriate for the indicated standard.
+Do not repeat previous answers.
             """
         },
   ]

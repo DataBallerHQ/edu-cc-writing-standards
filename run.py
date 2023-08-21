@@ -19,6 +19,55 @@ def print_section(header, content):
     wrapped_text = textwrap.fill(content, width=80)
     print(wrapped_text)
 
+
+def output_transcript(output):
+    for question in output["questions"]:
+        print_section("Context", question["context"])
+        print_section("Question", question["question"])
+        if len(question["answers"]) > 1:
+            print("\nEvaluation Rubric:")
+            for k,v in question["evaluation"].items():
+                content = f"[{k}]: {v}"
+                print(textwrap.fill(content, width=60))
+
+        for answer in question["answers"]:
+            print_section("Answer", answer["answer"])
+            print_section("Score", str(answer["score"]))
+            print_section("Detail", answer["detail"])
+            print_section("Commentary", answer["commentary"])
+            if len(question["answers"]) == 1:
+                print("\nEvaluation Rubric:")
+                for k,v in question["evaluation"].items():
+                    content = f"[{k}]: {v}"
+                    print(textwrap.fill(content, width=60))
+
+            print("")
+
+
+def output_test_table(output):
+    html = "<table>"
+    for question in output["questions"]:
+        html += f"<tr><td colspan='5'>Context</td><td>Score</td></tr>"
+        html += f"<tr><td colspan='5'>{question['context']}</td><td></td></tr>"
+        html += f"<tr><td colspan='5'>Question</td><td>Score</td></tr>"
+        html += f"<tr><td colspan='5'>{question['question']}</td><td></td></tr>"
+        html += f"<tr><td colspan='5'>Evaluation Rubric</td><td>Score</td></tr>"
+        html += f"<tr><td colspan='5'>{json.dumps(question['evaluation'], indent=4)}</td><td></td></tr>"
+        
+        html += "<td></td><td>Answer</td><td>Target</td><td>Score</td><td>Detail</td><td>Commentary</td><td>Score</td></tr>"
+        for answer in question["answers"]:
+            html += "<tr>"
+            html += f"<td>{answer['answer']}</td>"
+            html += f"<td>{answer['target']}</td>"
+            html += f"<td>{answer['score']}</td>"
+            html += f"<td>{answer['detail']}</td>"
+            html += f"<td>{answer['commentary']}</td>"
+            html += f"<td></td>"
+            html += "</tr>"
+    html += "</table>"
+    with open('test_table.html', 'w') as file:
+        file.write(html)
+
 def get_inputs():
     i = 0
     print("Available Common Core standard: ")
@@ -85,11 +134,15 @@ def automate_tests(question_count, answer_count):
             })
 
     # Open a file for writing
-    filename = cc_standard.replace(".", "_").replace(" ", "_").lower() + "_tests.json"
+    filename = cc_standard.split("-")[0].replace(".", "_").replace(" ", "_").lower() + "_tests.json"
     with open(filename, 'w') as file:
         json.dump(test_results, file)
 
+    output_transcript(test_results)
+    output_test_table(test_results)
+
     print("Tests complete. Results saved to", filename)
+
 
 
 def start():
